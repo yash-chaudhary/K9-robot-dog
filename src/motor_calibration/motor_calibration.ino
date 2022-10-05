@@ -96,7 +96,7 @@ void test_servo_sweep() {
 // function that sets servo to 135 angle position
 void calibrate_servos() {
   for(int servo_num = 0 ; servo_num < SERVO_COUNT; servo_num++) {              // iterate through updated angle for each servo
-    int pulse_len = map_angle(calibration_angle[servo_num]);                         // set pulse_length by mapping angle       
+    int pulse_len = map_angle(calibration_angle[servo_num]);                   // set pulse_length by mapping angle       
     pwm.setPWM(servo_num, 0, pulse_len);                                       // move servo to angle position
   }  
 }
