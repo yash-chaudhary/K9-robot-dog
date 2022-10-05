@@ -17,14 +17,14 @@
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x40, Wire);
 
 // servo constants
-#define SERVOMIN  80      // minimum servo pulse length count (out of 4096)
-#define SERVOMAX  470     // maximum servo pulse length count (out of 4096)
+#define SERVOMIN  85      // minimum servo pulse length count (out of 4096)
+#define SERVOMAX  460     // maximum servo pulse length count (out of 4096)
 #define USMIN  500        // rounded minimum microsecond length based on the minimum pulse of 80
 #define USMAX  2500       // rounded maximum microsecond length based on the maximum pulse of 470
 #define SERVO_FREQ 50     // analog servo frequency at 50Hz or pulse every 20ms
-#define SERVO_COUNT 8     // number of servo actuators
+#define SERVO_COUNT 1     // calibrate one servo at a time
 
-int servo_angle[8] = {135, 135, 135, 135, 135, 135, 135, 135};    // servo position array
+int calibration_angle[8] = {135, 135, 135, 135, 135, 135, 135, 135};    // servo position array
               
 // function prototypes
 void test_servo_sweep();
@@ -42,49 +42,69 @@ void setup() {
   pwm.setPWMFreq(SERVO_FREQ);               // set pwm frequency based on servo operating frequency
 
   test_servo_sweep();                       // run sweep test
- 
   calibrate_servos();                       // run servo calibration
 }
 
 // ----------------------------------------------------------------- LOOP ----------------------------------------------------------------
 
 void loop() {
-  // EMPTY
+  // EMPTY  
 }
 
 // --------------------------------------------------------------- FUNCTIONS --------------------------------------------------------------
 
 // fuction that sweeps servos from 0 to 270 degrees and back
 void test_servo_sweep() {
-  for(int servo_num; servo_num < SERVO_COUNT; servo_num++) {
-      int microsecond_mapped_angle;
+  for(int servo_num = 0 ; servo_num < SERVO_COUNT; servo_num++) {
+      int pulse_len;
+      
       
       // start from 0 degrees (extreme left end position)
-      microsecond_mapped_angle = map_angle(0);   
-      pwm.writeMicroseconds(servo_num, microsecond_mapped_angle); 
+      pulse_len = map_angle(0);
+      pwm.setPWM(servo_num, 0, pulse_len);
+      delay(8000);  // larger delay to out on servo horn to visualise movement
+
+      pulse_len = map_angle(45);
+      pwm.setPWM(servo_num, 0, pulse_len);
+      delay(5000);
+
+      pulse_len = map_angle(90);
+      pwm.setPWM(servo_num, 0, pulse_len);
+      delay(5000);
 
       // move to 135 degrees (neutral position)
-      microsecond_mapped_angle = map_angle(135);   
-      pwm.writeMicroseconds(servo_num, microsecond_mapped_angle); 
+      pulse_len = map_angle(135);
+      pwm.setPWM(servo_num, 0, pulse_len);
+      delay(5000);
+
+      pulse_len = map_angle(180);
+      pwm.setPWM(servo_num, 0, pulse_len);
+      delay(5000);
+
+      pulse_len = map_angle(225);
+      pwm.setPWM(servo_num, 0, pulse_len);
+      delay(5000);
 
       // move to 270 degrees (extreme right position)
-      microsecond_mapped_angle = map_angle(270);   
-      pwm.writeMicroseconds(servo_num, microsecond_mapped_angle); 
+      pulse_len = map_angle(270);
+      pwm.setPWM(servo_num, 0, pulse_len);
+      delay(5000);
   }
 }
 
 
 // function that sets servo to 135 angle position
 void calibrate_servos() {
-  for(int servo_num; servo_num < SERVO_COUNT; servo_num++) {              // iterate through updated angle for each servo
-    int microsecond_mapped_angle = map_angle(servo_angle[servo_num]);     // map updated servo angle position to assocaited microsecond value
-    pwm.writeMicroseconds(servo_num, microsecond_mapped_angle);           // move servo to specified position
+  for(int servo_num = 0 ; servo_num < SERVO_COUNT; servo_num++) {              // iterate through updated angle for each servo
+    int pulse_len = map_angle(calibration_angle[servo_num]);                         // set pulse_length by mapping angle       
+    pwm.setPWM(servo_num, 0, pulse_len);                                       // move servo to angle position
   }  
 }
 
 
 // function to map angle to microsseconds
 int map_angle(int angle) {
-  int microsecond_mapped_angle = map(angle, 0, 270, 500, 2500);
-  return microsecond_mapped_angle;
+  // int microsecond_mapped_angle = map(angle, 0, 270, USMIN, USMAX);            // mapping with microseconds
+  int pulse_length_angle = map(angle, 0, 270, SERVOMIN, SERVOMAX);                       // mapping with min, max servo pulse length
+  return pulse_length_angle;
 }
