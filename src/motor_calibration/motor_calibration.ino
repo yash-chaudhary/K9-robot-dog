@@ -34,15 +34,15 @@ int map_angle(int angle);
 // ----------------------------------------------------------------- SETUP ----------------------------------------------------------------
 
 void setup() {
-  Serial.begin(9600);                       // establishing serial connection at baud rate of 9600 bits/s
-  Serial.println(" ------ 8 channel Servo Calibration!  ------ ");
+  Serial.begin(9600);                                 // establishing serial connection at baud rate of 9600 bits/s
+  Serial.println("-8 channel Servo Calibration!-");
   
-  pwm.begin();                              // being pwm object
-  pwm.setOscillatorFrequency(27000000);     // set IC oscillator frequency to get expected pmw update frequency 
-  pwm.setPWMFreq(SERVO_FREQ);               // set pwm frequency based on servo operating frequency
+  pwm.begin();                                        // being pwm object
+  pwm.setOscillatorFrequency(27000000);               // set IC oscillator frequency to get expected pmw update frequency 
+  pwm.setPWMFreq(SERVO_FREQ);                         // set pwm frequency based on servo operating frequency
 
-  test_servo_sweep();                       // run sweep test
-  calibrate_servos();                       // run servo calibration
+  test_servo_sweep();                                 // run sweep test
+  calibrate_servos();                                 // run servo calibration
 }
 
 // ----------------------------------------------------------------- LOOP ----------------------------------------------------------------
@@ -102,9 +102,9 @@ void calibrate_servos() {
 }
 
 
-// function to map angle to microsseconds
+// function to map angle to pulse length
 int map_angle(int angle) {
   // int microsecond_mapped_angle = map(angle, 0, 270, USMIN, USMAX);            // mapping with microseconds
-  int pulse_length_angle = map(angle, 0, 270, SERVOMIN, SERVOMAX);                       // mapping with min, max servo pulse length
+  int pulse_length_angle = map(angle, 0, 270, SERVOMIN, SERVOMAX);               // mapping with min, max servo pulse length
   return pulse_length_angle;
 }

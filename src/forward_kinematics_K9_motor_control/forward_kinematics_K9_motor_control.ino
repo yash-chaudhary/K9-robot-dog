@@ -21,17 +21,30 @@
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x40, Wire);
 
 // servo constants
-#define SERVOMIN  80      // minimum servo pulse length count (out of 4096)
-#define SERVOMAX  470     // maximum servo pulse length count (out of 4096)
+#define SERVOMIN  85      // minimum servo pulse length count (out of 4096)
+#define SERVOMAX  460     // maximum servo pulse length count (out of 4096)
 #define USMIN  500        // rounded minimum microsecond length based on the minimum pulse of 80
 #define USMAX  2500       // rounded maximum microsecond length based on the maximum pulse of 470
 #define SERVO_FREQ 50     // analog servo frequency at 50Hz or pulse every 20ms
 #define SERVO_COUNT 8     // number of servo actuators
 
 
-char command;                                                 // char type command
-int init_servo_angle[8] = {90, 90, 90, 90, 90, 90, 90, 90};   // initial servo positions
-int updated_servo_angle[8];                                   // updated servo positions
+char command;                                                         // char type command
+
+/*
+ * init_servo_angle[0] assigned to 
+ * init_servo_angle[1] assigned to 
+ * init_servo_angle[2] assigned to 
+ * init_servo_angle[3] assigned to 
+ * init_servo_angle[4] assigned to 
+ * init_servo_angle[5] assigned to 
+ * init_servo_angle[6] assigned to 
+ * init_servo_angle[7] assigned to 
+ * 
+ */
+int init_servo_angle[8] = {135, 135, 135, 135, 135, 135, 135, 135};   // initial servo positions
+
+int updated_servo_angle[8];                                           // updated servo positions
 
 // function prototypes
 void set_servo_position();
@@ -110,15 +123,22 @@ void loop() {
 
 // ------------------------------------------------------------------- MOTOR CONTROL -------------------------------------------------------------------
 
-// NEED to setup up a way to revert back to standup movement after a delay for each movement !!!!!!!!!!!!!!
+// NEED to setup up a way to revert back to standup movement after a delay for each movement !!!!!!!!!!!!!! - just use a delay and then standup() command for non-standups commands
 
 // function that moves servos to correct positions 
 void set_servo_position() {
   int i;
   for(int servo_num; servo_num < SERVO_COUNT; servo_num++) {                           // iterate through updated angle for each servo
-    int microsecond_mapped_angle = map(updated_servo_angle[i], 0, 270, 500, 2500);     // map updated servo angle position to assocaited microsecond value
+    int microsecond_mapped_angle = map_angle(     // map updated servo angle position to assocaited microsecond value
     pwm.writeMicroseconds(i, microsecond_mapped_angle);                                // move servo to specified position
   }  
+}
+
+// function to map angle to pulse length
+int map_angle(int angle) {
+  // int microsecond_mapped_angle = map(angle, 0, 270, USMIN, USMAX);            // mapping with microseconds
+  int pulse_length_angle = map(angle, 0, 270, SERVOMIN, SERVOMAX);               // mapping with min, max servo pulse length
+  return pulse_length_angle;
 }
 
 
@@ -127,14 +147,14 @@ void set_servo_position() {
 // standup routine
 void standup() {
   
-//  updated_servo_angle[0] = // front left upper leg 
-//  updated_servo_angle[1] = // front left lower leg
-//  updated_servo_angle[2] = // back left upper leg
-//  updated_servo_angle[3] = // back left lower leg
-//  updated_servo_angle[4] = // front right upper leg
-//  updated_servo_angle[5] = // front right lower leg
-//  updated_servo_angle[6] = // back right upper leg
-//  updated_servo_angle[7] = // back right lower leg
+//  updated_servo_angle[0] =        // front left upper leg 
+//  updated_servo_angle[1] =         // front left lower leg
+//  updated_servo_angle[2] =         // back left upper leg
+//  updated_servo_angle[3] =         // back left lower leg
+//  updated_servo_angle[4] =         // front right upper leg
+//  updated_servo_angle[5] =         // front right lower leg
+//  updated_servo_angle[6] =         // back right upper leg
+//  updated_servo_angle[7] =         // back right lower leg
 
   set_servo_position();
 }
