@@ -20,31 +20,35 @@
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x40, Wire);
 
 // servo constants
-#define SERVOMIN  85      // minimum servo pulse length count (out of 4096)
-#define SERVOMAX  460     // maximum servo pulse length count (out of 4096)
-#define USMIN  500        // rounded minimum microsecond length based on the minimum pulse of 80
-#define USMAX  2500       // rounded maximum microsecond length based on the maximum pulse of 470
-#define SERVO_FREQ 50     // analog servo frequency at 50Hz or pulse every 20ms
-#define SERVO_COUNT 8     // number of servo actuators
+#define SERVOMIN  85          // minimum servo pulse length count (out of 4096)
+#define SERVOMAX  460         // maximum servo pulse length count (out of 4096)
+#define SG90_SERVOMIN 70      // minimum servo pulse length count for SG-90 head motor
+#define SG90_SERVOMAX 490     // maximum servo pulse length count for SG-90 head motor
+#define USMIN  500            // rounded minimum microsecond length based on the minimum pulse of 80
+#define USMAX  2500           // rounded maximum microsecond length based on the maximum pulse of 470
+#define SERVO_FREQ 50         // analog servo frequency at 50Hz or pulse every 20ms
+#define SERVO_COUNT 9         // number of servo actuators (8 leg servos + 1 head servo)
 
-char command;             // char type command
+char command;                 // char type command
 
 /*
- * init_servo_angle[0] assigned to front right upper leg
- * init_servo_angle[1] assigned to front right lower leg
- * init_servo_angle[2] assigned to front left upper leg
- * init_servo_angle[3] assigned to front left lower leg
- * init_servo_angle[4] assigned to back right upper leg
- * init_servo_angle[5] assigned to back right lower leg
- * init_servo_angle[6] assigned to back left upper leg
- * init_servo_angle[7] assigned to back left upper leg
+ * updated_servo_angle[0] assigned to front right upper leg
+ * updated_servo_angle[1] assigned to front right lower leg
+ * updated_servo_angle[2] assigned to front left upper leg
+ * updated_servo_angle[3] assigned to front left lower leg
+ * updated_servo_angle[4] assigned to back right upper leg
+ * updated_servo_angle[5] assigned to back right lower leg
+ * updated_servo_angle[6] assigned to back left upper leg
+ * updated_servo_angle[7] assigned to back left upper leg
+ * updated_servo_angle[9] assigned to head 
  */
-int init_servo_angle = 135;    // initial servo positions
-int updated_servo_angle[8];    // updated servo positions
+const int init_leg_servo_angle = 135;    // initial leg servo positions
+const int init_head_servo_angle = 90;    // intial head servo position
+int updated_servo_angle[9];              // updated servo positions
 
 // function prototypes
 void set_servo_position();
-int map_angle(int angle);
+int map_angle(int angle, int max_deg);
 void standup();
 void laydown();
 void sit();
@@ -57,7 +61,7 @@ void walk();
 
 void setup() {
   Serial.begin(9600);                               // establishing serial connection at baud rate of 9600 bits/s
-  Serial.println("\\ ---- K9 ACTIVATED ---- //");
+  Serial.println(" ----- K9 ACTIVATED -----");
   
   pwm.begin();                                      // being pwm object
   pwm.setOscillatorFrequency(27000000);             // set IC oscillator frequency to get expected pmw update frequency 
@@ -82,32 +86,32 @@ void loop() {
       switch(command) {
 
       case 'q' :
-        Serial.println("----- Standup command executed! -----");
+        Serial.println("----- Standup command EXECUTED! -----");
         standup();
       break;
 
       case 'w' :
-        Serial.println("----- Laydown command executed! -----");
+        Serial.println("----- Laydown command EXECUTED! -----");
         laydown();
       break;
 
       case 'e' :
-        Serial.println("----- Sit command executed! -----");
+        Serial.println("----- Sit command EXECUTED! -----");
         sit();
       break;
 
       case 'r' :
-        Serial.println("----- Shake command executed! -----");
+        Serial.println("----- Shake command EXECUTED! -----");
         shake();
       break;
 
       case 't' :
-        Serial.println("----- Dance command executed! -----");
+        Serial.println("----- Dance command EXECUTED! -----");
         dance();
       break;
 
       case 'y' :
-        Serial.println("----- Walk command executed! -----");
+        Serial.println("----- Walk command EXECUTED! -----");
         walk();
       break;
       }
@@ -120,51 +124,78 @@ void loop() {
 
 // function that moves servos to correct positions 
 void set_servo_position() {
-  for(int servo_num = 0; servo_num < SERVO_COUNT; servo_num++) {          // iterate through updated angle for each servo
-    int pulse_len = map_angle(updated_servo_angle[servo_num]);            // map updated servo angle position to assocaited microsecond value
-    pwm.setPWM(servo_num, 0, pulse_len);                                  // move servo to specified position
+
+  int pulse_len;
+  
+  // iterate through updated angle for each servo
+  for(int servo_num = 0; servo_num < SERVO_COUNT; servo_num++) {          
+
+    // controls movement of head servo
+    if (servo_num == 8) {
+      pulse_len = map_angle(updated_servo_angle[servo_num], 180);           // map updated servo angle position to assocaited pulse length value
+      pwm.setPWM(servo_num, 0, pulse_len);                                  // move servo to specified position
+    }
+
+    // controls movement of leg servos
+    else {
+      pulse_len = map_angle(updated_servo_angle[servo_num], 270);           // map updated servo angle position to assocaited pulse length value
+      pwm.setPWM(servo_num, 0, pulse_len);                                  // move servo to specified position
+    }
+    
   }  
 }
 
-// function to map angle to pulse length
-int map_angle(int angle) {
-  int pulse_length_angle = map(angle, 0, 270, SERVOMIN, SERVOMAX);         // mapping with min, max servo pulse length
-  return pulse_length_angle;
+// function to map angle to pulse length 
+int map_angle(int angle, int max_deg) {
+
+  // maps pulse length between 0 and 180
+  if (max_deg == 180) {
+    int pulse_length_angle = map(angle, 0, 180, SG90_SERVOMIN, SG90_SERVOMAX);     // mapping with min, max servo pulse length
+    return pulse_length_angle; 
+  }
+
+  // maps pulse length between 0 and 270
+  else if (max_deg == 270) {
+    int pulse_length_angle = map(angle, 0, 270, SERVOMIN, SERVOMAX);               // mapping with min, max servo pulse length
+    return pulse_length_angle; 
+  }
 }
+
 
 // ---------------------------------------------------------------------- ROUTINES ---------------------------------------------------------------------- 
 
-// standup routine
+// standup routine (press q)
 void standup() {
-  // updated_servo_angle[0] = init_servo_angle - 55;      // front right upper leg 
-  // updated_servo_angle[1] = init_servo_angle - 25;      // front right lower leg
-  // updated_servo_angle[2] = init_servo_angle - 55       // front left upper leg
-  // updated_servo_angle[3] = init_servo_angle - 25       // front left lower leg
-  // updated_servo_angle[4] = init_servo_angle - 55       // back right upper leg
-  // updated_servo_angle[5] = init_servo_angle - 25;      // back right lower leg
-  // updated_servo_angle[6] = init_servo_angle - 55       // back left upper leg
-  // updated_servo_angle[7] = init_servo_angle - 25       // back left lower leg
+  updated_servo_angle[0] = init_leg_servo_angle - 40;      // front right upper leg 
+  updated_servo_angle[1] = init_leg_servo_angle - 30;      // front right lower leg
+  updated_servo_angle[2] = init_leg_servo_angle + 25;       // front left upper leg
+  updated_servo_angle[3] = init_leg_servo_angle + 25;       // front left lower leg
+  // updated_servo_angle[4] = init_leg_servo_angle - 55       // back right upper leg
+  // updated_servo_angle[5] = init_leg_servo_angle - 25;      // back right lower leg
+  // updated_servo_angle[6] = init_leg_servo_angle - 55       // back left upper leg
+  // updated_servo_angle[7] = init_leg_servo_angle - 25       // back left lower leg
 
   set_servo_position();
 }
 
 
-// laydown routune
+// laydown routune (press w)
 void laydown() { 
-  updated_servo_angle[0] = init_servo_angle      // front right upper leg 
-  updated_servo_angle[1] = init_servo_angle      // front right lower leg
-  updated_servo_angle[2] = init_servo_angle      // front left upper leg
-  updated_servo_angle[3] = init_servo_angle      // front left lower leg
-  updated_servo_angle[4] = init_servo_angle      // back right upper leg
-  updated_servo_angle[5] = init_servo_angle      // back right lower leg
-  updated_servo_angle[6] = init_servo_angle      // back left upper leg
-  updated_servo_angle[7] = init_servo_angle      // back left lower leg
+   updated_servo_angle[0] = init_leg_servo_angle;       // front right upper leg 
+   updated_servo_angle[1] = init_leg_servo_angle;       // front right lower leg
+   updated_servo_angle[2] = init_leg_servo_angle;       // front left upper leg
+   updated_servo_angle[3] = init_leg_servo_angle;      // front left lower leg
+  // updated_servo_angle[4] = init_leg_servo_angle      // back right upper leg
+  // updated_servo_angle[5] = init_leg_servo_angle      // back right lower leg
+  // updated_servo_angle[6] = init_leg_servo_angle      // back left upper leg
+  // updated_servo_angle[7] = init_leg_servo_angle      // back left lower leg
+  // updated_servo_angle[8] = init_leg_servo_angle      // back left lower leg
 
   set_servo_position();
 }
 
 
-// sit routine
+// sit routine (press e)
 void sit() {
 
   // updated_servo_angle[0] =       // front right upper leg 
@@ -179,7 +210,7 @@ void sit() {
 }
 
 
-// shake routine
+// shake routine (press r)
 void shake() {
 
   // updated_servo_angle[0] =       // front right upper leg 
@@ -192,13 +223,13 @@ void shake() {
   // updated_servo_angle[7] =       // back left lower leg  
 }
 
-// dance routine
+// dance routine (press t)
 void dance() {
-  
+  // (use for loop to update position then set position then maybe add a delay then update position and set position) <-- wrap in a loop
 }
 
 
-// walk routine
+// walk routine (press y)
 void walk() {
   
 }

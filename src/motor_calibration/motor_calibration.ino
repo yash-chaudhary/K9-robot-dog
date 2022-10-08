@@ -46,7 +46,7 @@ int map_angle(int angle, int max_deg);
 
 void setup() {
   Serial.begin(9600);                                                         // establishing serial connection at baud rate of 9600 bits/s
-  Serial.println("---- INITIATING Servo Motor Calibration and Sweep Test ---- ");
+  Serial.println("---- Servo Motor Calibration and Sweep Test ---- ");
   Serial.println();
   
   pwm.begin();                                                                // being pwm object
