@@ -5,8 +5,9 @@
  *  Date Created: 05/10/2022
  *    
  *  ----- PRELIMINARY NOTES ------ 
- *  The following code is used to calibrate the servo motors to a neutral position of 135 degrees.   
+ *  The following code is used to calibrate the servo motors to a neutral position of 135 and 90 degrees.   
  *  Note that the servo motors (SF3218MG) can rotate from 0 to 270 degrees so 135 degrees allows for 135 degrees of travel clockwise and counter-clockwise
+ *  Note that the servo motor (SG-90) can rorate from 0 to 180 degrees so 90 degrees is its neutral position
  *  
  */
 
@@ -106,37 +107,44 @@ void test_servo_sweep(int max_deg) {
       // start from 0 degrees (extreme left end position)
       pulse_len = map_angle(0, max_deg);
       pwm.setPWM(servo_num, 0, pulse_len);
-      delay(8000);  // larger delay to out on servo horn to visualise movement
+      Serial.println("Position 0 deg");
+      delay(5000);                          // larger delay to out on servo horn to visualise movement
 
       // move to 45 deg
       pulse_len = map_angle(45, max_deg);
       pwm.setPWM(servo_num, 0, pulse_len);
-      delay(5000);
+      Serial.println("Position 45 deg");
+      delay(2000);
 
       // move to 90 deg
       pulse_len = map_angle(90, max_deg);
       pwm.setPWM(servo_num, 0, pulse_len);
-      delay(5000);
+      Serial.println("Position 90 deg");
+      delay(2000);
 
       // move to 135 degrees (neutral position)
       pulse_len = map_angle(135, max_deg);
       pwm.setPWM(servo_num, 0, pulse_len);
-      delay(5000);
+      Serial.println("Position 135 deg");
+      delay(2000);
 
       // move to 180 deg
       pulse_len = map_angle(180, max_deg);
       pwm.setPWM(servo_num, 0, pulse_len);
-      delay(5000);
+      Serial.println("Position 180 deg");
+      delay(2000);
 
       // move to 225 deg
       pulse_len = map_angle(225, max_deg);
       pwm.setPWM(servo_num, 0, pulse_len);
-      delay(5000);
+      Serial.println("Position 225 deg");
+      delay(2000);
 
       // move to 270 degrees (extreme right position)
       pulse_len = map_angle(270, max_deg);
       pwm.setPWM(servo_num, 0, pulse_len);
-      delay(5000);
+      Serial.println("Position 270 deg");
+      delay(2000);
     }
 
     else if (max_deg == 180) {
@@ -144,26 +152,31 @@ void test_servo_sweep(int max_deg) {
       // start motion at 0 deg
       pulse_len = map_angle(0, max_deg);
       pwm.setPWM(servo_num, 0, pulse_len);
+      Serial.println("Position 0 deg");
       delay(5000);                           // larger delay to out on servo horn to visualise 
 
       // move to 45 deg
       pulse_len = map_angle(45, max_deg);
       pwm.setPWM(servo_num, 0, pulse_len);
+      Serial.println("Position 45 deg");
       delay(2000);
 
       // move to 90 deg
       pulse_len = map_angle(90, max_deg);
       pwm.setPWM(servo_num, 0, pulse_len);
+      Serial.println("Position 90 deg");
       delay(2000);
 
       // move to 135 deg
       pulse_len = map_angle(135, max_deg);
       pwm.setPWM(servo_num, 0, pulse_len);
+      Serial.println("Position 135 deg");
       delay(2000);
 
       // move to 180 deg
       pulse_len = map_angle(180, max_deg);
       pwm.setPWM(servo_num, 0, pulse_len);
+      Serial.println("Position 180 deg");
       delay(2000);
     }
   }
@@ -175,11 +188,13 @@ void calibrate_servos( int max_deg) {
   if (max_deg == 180) {
     int pulse_len =  map_angle(calibration_angle[1], max_deg);        // set pulse_length by mapping 90 deg angle 
     pwm.setPWM(0, 0, pulse_len);                                      // move servo on Pin 0 to angle position
+    Serial.println("Calibration position set to 90 DEGREES");
   }
   
   else if (max_deg == 270) {
     int pulse_len =  map_angle(calibration_angle[0], max_deg);        // set pulse_length by mapping 135 deg angle 
     pwm.setPWM(0, 0, pulse_len);                                      // move servo on Pin 0 to angle position
+    Serial.println("Calibration position set to 135 DEGREES");
   }
 }
 
