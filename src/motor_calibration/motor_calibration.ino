@@ -33,7 +33,7 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x40, Wire);
  * first angles is used to calibrate SF3218MG servo motors (max angle of 270 deg)
  * last angle used to calibrate SG-90 servo motor (max angle of 180 deg)
  */ 
-int calibration_angle[3] = {135, 90};    // servo neutral position array
+int calibration_angle[2] = {135, 90};    // servo neutral position array
 char servo_command;                      // servo command character in serial monitor
               
 // function prototypes

@@ -6,10 +6,12 @@
  *    
  *    ------ PRELIMINARY NOTES ------ 
  *  Servo motors SF3218MG can move from 0 to 270 degrees and are mounted on chassis sideways.
- *  Before mounting upper and lower leg assembly run the motor calibration code that will set the motors to the neutral position at 90 degrees.
+ *  Before mounting upper and lower leg assembly run the motor calibration code that will set the motors to the neutral position at 135 degrees.
  *  The servo neutral position can be moved to 135 degrees giving the robot +/- 135 degrees of motion at the joints. 
  *  The kinematic model chosen for this project is forward kinematics where the angles of the joints are specified to move the robot to its desired configuration
  *  This is a brute force method used to actuate the robot by essentially finding the angles of movement via trial and error
+ *  
+ *  NOTE that the head will move only for certain commands and operates betweeo 0 and 180 degrees where 90 degrees is its neutral position
  *  
  */
 
@@ -86,13 +88,13 @@ void loop() {
       switch(command) {
 
       case 'q' :
-        Serial.println("----- Standup command EXECUTED! -----");
-        standup();
+        Serial.println("----- Laydown command EXECUTED! -----");
+        laydown();
       break;
 
       case 'w' :
-        Serial.println("----- Laydown command EXECUTED! -----");
-        laydown();
+        Serial.println("----- Standup command EXECUTED! -----");
+         standup();
       break;
 
       case 'e' :
@@ -166,30 +168,38 @@ int map_angle(int angle, int max_deg) {
 
 // standup routine (press q)
 void standup() {
-  updated_servo_angle[0] = init_leg_servo_angle - 40;      // front right upper leg 
-  updated_servo_angle[1] = init_leg_servo_angle - 30;      // front right lower leg
-  updated_servo_angle[2] = init_leg_servo_angle + 25;       // front left upper leg
-  updated_servo_angle[3] = init_leg_servo_angle + 25;       // front left lower leg
-  // updated_servo_angle[4] = init_leg_servo_angle - 55       // back right upper leg
-  // updated_servo_angle[5] = init_leg_servo_angle - 25;      // back right lower leg
-  // updated_servo_angle[6] = init_leg_servo_angle - 55       // back left upper leg
-  // updated_servo_angle[7] = init_leg_servo_angle - 25       // back left lower leg
+
+  // can add a delay to maybe standup back legs before front legs 
+  updated_servo_angle[0] = init_leg_servo_angle - 55;       // front right upper leg 
+  updated_servo_angle[1] = init_leg_servo_angle - 25;       // front right lower leg
+  
+  updated_servo_angle[2] = init_leg_servo_angle + 40;       // front left upper leg
+  updated_servo_angle[3] = init_leg_servo_angle + 30;       // front left lower leg
+  
+  updated_servo_angle[4] = init_leg_servo_angle - 55;       // back right upper leg
+  updated_servo_angle[5] = init_leg_servo_angle - 25;       // back right lower leg
+  
+  updated_servo_angle[6] = init_leg_servo_angle + 40;       // back left upper leg
+  updated_servo_angle[7] = init_leg_servo_angle + 30;       // back left lower leg
 
   set_servo_position();
 }
 
 
 // laydown routune (press w)
-void laydown() { 
-   updated_servo_angle[0] = init_leg_servo_angle;       // front right upper leg 
-   updated_servo_angle[1] = init_leg_servo_angle;       // front right lower leg
-   updated_servo_angle[2] = init_leg_servo_angle;       // front left upper leg
-   updated_servo_angle[3] = init_leg_servo_angle;      // front left lower leg
-  // updated_servo_angle[4] = init_leg_servo_angle      // back right upper leg
-  // updated_servo_angle[5] = init_leg_servo_angle      // back right lower leg
-  // updated_servo_angle[6] = init_leg_servo_angle      // back left upper leg
-  // updated_servo_angle[7] = init_leg_servo_angle      // back left lower leg
-  // updated_servo_angle[8] = init_leg_servo_angle      // back left lower leg
+void laydown() {
+  
+   updated_servo_angle[0] = init_leg_servo_angle;       // front right upper leg (FRU)
+   updated_servo_angle[1] = init_leg_servo_angle;       // front right lower leg (FRL)
+   
+   updated_servo_angle[2] = init_leg_servo_angle;       // front left upper leg  (FLU)
+   updated_servo_angle[3] = init_leg_servo_angle;       // front left lower leg   (FLL)
+   
+   updated_servo_angle[4] = init_leg_servo_angle;      // back right upper leg (BRU)
+   updated_servo_angle[5] = init_leg_servo_angle;      // back right lower leg (BRL)
+   
+   updated_servo_angle[6] = init_leg_servo_angle;       // back left upper leg (BLU)
+   updated_servo_angle[7] = init_leg_servo_angle;       // back left lower leg (BLL)
 
   set_servo_position();
 }
@@ -198,14 +208,19 @@ void laydown() {
 // sit routine (press e)
 void sit() {
 
-  // updated_servo_angle[0] =       // front right upper leg 
-  // updated_servo_angle[1] =       // front right lower leg
-  // updated_servo_angle[2] =       // front left upper leg
-  // updated_servo_angle[3] =       // front left lower leg
-  // updated_servo_angle[4] =       // back right upper leg
-  // updated_servo_angle[5] =       // back right lower leg
-  // updated_servo_angle[6] =       // back left upper leg
-  // updated_servo_angle[7] =       // back left lower leg
+   updated_servo_angle[0] = init_leg_servo_angle - 25;       // front right upper leg 
+   updated_servo_angle[1] = init_leg_servo_angle - 35;       // front right lower leg
+  
+   updated_servo_angle[2] = init_leg_servo_angle + 10;       // front left upper leg
+   updated_servo_angle[3] = init_leg_servo_angle + 40;       // front left lower leg
+   
+   updated_servo_angle[4] = init_leg_servo_angle;      // back right upper leg (BRU)
+   updated_servo_angle[5] = init_leg_servo_angle;      // back right lower leg (BRL)
+   
+   updated_servo_angle[6] = init_leg_servo_angle;       // back left upper leg (BLU)
+   updated_servo_angle[7] = init_leg_servo_angle;       // back left lower leg (BLL)leg
+
+   set_servo_position(); 
   
 }
 
