@@ -42,11 +42,11 @@ char command;                 // char type command
  * updated_servo_angle[5] assigned to back right lower leg
  * updated_servo_angle[6] assigned to back left upper leg
  * updated_servo_angle[7] assigned to back left upper leg
- * updated_servo_angle[9] assigned to head 
+ * updated_servo_angle[8] assigned to head 
  */
 const int init_leg_servo_angle = 135;    // initial leg servo positions
 const int init_head_servo_angle = 90;    // intial head servo position
-int updated_servo_angle[9];              // updated servo positions
+int updated_servo_angle[9];              // array to stored updated servo positions
 
 // function prototypes
 void set_servo_position();
@@ -183,6 +183,7 @@ void standup() {
   updated_servo_angle[7] = init_leg_servo_angle + 30;       // back left lower leg
 
   set_servo_position();
+
 }
 
 
@@ -201,7 +202,33 @@ void laydown() {
    updated_servo_angle[6] = init_leg_servo_angle;      // back left upper leg (BLU)
    updated_servo_angle[7] = init_leg_servo_angle;      // back left lower leg (BLL)
 
+   updated_servo_angle[8] = init_head_servo_angle;     // head
+
   set_servo_position();
+   
+   // rotate head when laying down
+   delay(1000);
+   updated_servo_angle[8] = init_head_servo_angle + 10;      // 50
+   set_servo_position(); 
+   delay(400);
+   updated_servo_angle[8] = init_head_servo_angle + 20;
+   set_servo_position(); 
+    delay(400);
+   updated_servo_angle[8] = init_head_servo_angle + 30;
+   set_servo_position(); 
+   delay(400);
+   updated_servo_angle[8] = init_head_servo_angle + 40;
+   set_servo_position();
+
+   
+
+   
+//   delay(1000);
+//   updated_servo_angle[8] = init_head_servo_angle - 35;      // -35
+//   set_servo_position(); 
+//   delay(1000);
+//   updated_servo_angle[8] = init_head_servo_angle;
+//   set_servo_position();
 }
 
 
@@ -221,7 +248,6 @@ void sit() {
    updated_servo_angle[7] = init_leg_servo_angle + 10;       // back left lower leg 
 
    set_servo_position(); 
-  
 }
 
 

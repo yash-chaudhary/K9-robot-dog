@@ -42,7 +42,7 @@ String command;                 // string type command
  * updated_servo_angle[5] assigned to back right lower leg
  * updated_servo_angle[6] assigned to back left upper leg
  * updated_servo_angle[7] assigned to back left upper leg
- * updated_servo_angle[9] assigned to head 
+ * updated_servo_angle[8] assigned to head 
  */
 const int init_leg_servo_angle = 135;    // initial leg servo positions
 const int init_head_servo_angle = 90;    // intial head servo position
@@ -109,7 +109,7 @@ void loop() {
         Serial.println(1);                     
     } 
 
-    // runtime protection just in case some bad data is transfer
+    // runtime protection just in case some bad data is transferred
     else {
         standup();                              // execute standup routine
         Serial.println(1);                     
@@ -200,7 +200,7 @@ void laydown() {
    updated_servo_angle[6] = init_leg_servo_angle;      // back left upper leg (BLU)
    updated_servo_angle[7] = init_leg_servo_angle;      // back left lower leg (BLL)
 
-  set_servo_position();
+   set_servo_position();
 }
 
 
@@ -278,10 +278,6 @@ void dance() {
     
   }
 }
-
-
-
- 
 
 
 // ------------------------------------------------------------------------------------------------------------------------------------------------------ 
