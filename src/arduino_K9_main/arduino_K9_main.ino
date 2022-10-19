@@ -31,7 +31,7 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x40, Wire);
 #define SERVO_FREQ 50         // analog servo frequency at 50Hz or pulse every 20ms
 #define SERVO_COUNT 9         // number of servo actuators (8 leg servos + 1 head servo)
 
-char command;                 // char type command
+String command;                 // string type command
 
 /*
  * updated_servo_angle[0] assigned to front right upper leg
@@ -63,60 +63,59 @@ void walk();
 
 void setup() {
   Serial.begin(9600);                               // establishing serial connection at baud rate of 9600 bits/s
-  Serial.println(" ----- K9 ACTIVATED -----");
   
   pwm.begin();                                      // being pwm object
   pwm.setOscillatorFrequency(27000000);             // set IC oscillator frequency to get expected pmw update frequency 
   pwm.setPWMFreq(SERVO_FREQ);                       // set pwm frequency based on servo operating frequency
+
+  // ensure serial connection established before proceeding
+  while(!Serial) {
+    ;
+  }
 }
 
 // ------------------------------------------------------------------- LOOP -------------------------------------------------------------------
 
-/*
- *  --- command control ---
- * 'q' = standup()
- * 'w' = laydown()
- * 'e' = sit()
- * 'r' = shake()
- * 't' = dance()
- * 'y' = walk()
-*/
-
 void loop() {
-  while(Serial.available()) {
-    command = Serial.read();
-      switch(command) {
 
-      case 'q' :
-        Serial.println("----- Laydown command EXECUTED! -----");
-        laydown();
-      break;
+  // serial connection established between RPI and Arduino
+  if(Serial.available()) {
 
-      case 'w' :
-        Serial.println("----- Standup command EXECUTED! -----");
-         standup();
-      break;
+    command = Serial.readStringUntil('\n');       // read string from RPI
+    command.trim();                               // remove any whitespace
 
-      case 'e' :
-        Serial.println("----- Sit command EXECUTED! -----");
-        sit();
-      break;
+    if (command.equals("laydown")) {
+      laydown();                              // execute laydown routine
+      Serial.println(1);                      // send execution success integer 
+    }
 
-      case 'r' :
-        Serial.println("----- Shake command EXECUTED! -----");
-        shake();
-      break;
+    else if (command.equals("standup")) {
+      standup();                              // execute standup routine
+      Serial.println(1);                      
+    }
 
-      case 't' :
-        Serial.println("----- Dance command EXECUTED! -----");
-        dance();
-      break;
+    else if (command.equals("sit")) {
+        sit();                                // execute sit routine
+        Serial.println(1);                    
+    }
 
-      case 'y' :
-        Serial.println("----- Walk command EXECUTED! -----");
-        walk();
-      break;
-      }
+    else if (command.equals("shake")) {
+        shake();                              // execute sit routine
+        Serial.println(1);                    
+    }
+
+    else if (command.equals("dance")) {
+        dance();                              // execute dance routine
+        Serial.println(1);                     
+    } 
+
+    // runtime protection just in case some bad data is transfer
+    else {
+        standup();                              // execute standup routine
+        Serial.println(1);                     
+    }
+
+    delay(1000);  
   }
 }
 
@@ -166,7 +165,7 @@ int map_angle(int angle, int max_deg) {
 
 // ---------------------------------------------------------------------- ROUTINES ---------------------------------------------------------------------- 
 
-// standup routine (press w)
+// standup routine 
 void standup() {
 
   // can add a delay to maybe standup back legs before front legs 
@@ -186,7 +185,7 @@ void standup() {
 }
 
 
-// laydown routune (press q)
+// laydown routune 
 void laydown() {
   
    updated_servo_angle[0] = init_leg_servo_angle;      // front right upper leg (FRU)
@@ -205,7 +204,7 @@ void laydown() {
 }
 
 
-// sit routine (press e)
+// sit routine 
 void sit() {
 
    updated_servo_angle[0] = init_leg_servo_angle - 45;       // front right upper leg 
@@ -225,7 +224,7 @@ void sit() {
 }
 
 
-// shake routine (press r)
+// shake routine
 void shake() {
 
    updated_servo_angle[0] = init_leg_servo_angle + 20;       // front right upper leg 
@@ -243,10 +242,9 @@ void shake() {
    set_servo_position(); 
 }
 
-// dance routine (press t)
+// dance routine
 void dance() {
 
-  
   standup();          // must start in standup stance
 
   delay(1250);        // delay to allow servos to move to standup stance
@@ -282,99 +280,8 @@ void dance() {
 }
 
 
-// walk routine (press y)
-void walk() {
 
-  // need to move diagonal legs from standup stanne
-  // STEP 1: upper leg move forward
-  // STEP 2: lower leg move down -> while this is happening other diagonal moves.
-
-  // standup 
-  standup();
-
-  delay(1000);
-
-   // move leg ---------------------------------------------------------------------------------------------------------
-
-  int times_move = 4;
-
-//  for(int i=0; i < times_move; i++) {
-
-
-  // FRONT RIGHT and BACK LEFT DIAGONAL
-
-  updated_servo_angle[0] = init_leg_servo_angle;       // front right upper leg 
-  updated_servo_angle[1] = init_leg_servo_angle - 30;      // front right lower leg
-  
-  updated_servo_angle[2] = init_leg_servo_angle + 40;       // front left upper leg
-  updated_servo_angle[3] = init_leg_servo_angle + 30;       // front left lower leg
-  
-  updated_servo_angle[4] = init_leg_servo_angle - 55;      // back right upper leg
-  updated_servo_angle[5] = init_leg_servo_angle - 25;       // back right lower leg
-  
-  updated_servo_angle[6] = init_leg_servo_angle - 10;      // back left upper leg
-  updated_servo_angle[7] = init_leg_servo_angle + 30;     // back left lower leg
-
-  set_servo_position();
-  
-//
-//  delay(200);
-//
-//  updated_servo_angle[0] = init_leg_servo_angle - 50;       // front right upper leg 
-//  updated_servo_angle[1] = init_leg_servo_angle - 30;      // front right lower leg
-//  
-//  updated_servo_angle[2] = init_leg_servo_angle + 40;       // front left upper leg
-//  updated_servo_angle[3] = init_leg_servo_angle + 30;       // front left lower leg
-//  
-//  updated_servo_angle[4] = init_leg_servo_angle - 55;        // back right upper leg
-//  updated_servo_angle[5] = init_leg_servo_angle - 25;       // back right lower leg
-//  
-//  updated_servo_angle[6] = init_leg_servo_angle + 30;      // back left upper leg
-//  updated_servo_angle[7] = init_leg_servo_angle + 40;     // back left lower leg
-//
-//  set_servo_position();
-//
-//  delay(200);
-
-
-  // BACK RIGHT and FRONT LEFT DIAGONAL
-  
-//  updated_servo_angle[0] = init_leg_servo_angle - 55;       // front right upper leg 
-//  updated_servo_angle[1] = init_leg_servo_angle - 25;      // front right lower leg
-//  
-//  updated_servo_angle[2] = init_leg_servo_angle - 10;       // front left upper leg
-//  updated_servo_angle[3] = init_leg_servo_angle + 30;       // front left lower leg
-//  
-//  updated_servo_angle[4] = init_leg_servo_angle - 10;      // back right upper leg
-//  updated_servo_angle[5] = init_leg_servo_angle - 25;       // back right lower leg
-//  
-//  updated_servo_angle[6] = init_leg_servo_angle + 40;      // back left upper leg
-//  updated_servo_angle[7] = init_leg_servo_angle + 30;     // back left lower leg
-//
-//  set_servo_position();
-//
-//  delay(200);
-//
-//  
-//  updated_servo_angle[0] = init_leg_servo_angle - 55;       // front right upper leg 
-//  updated_servo_angle[1] = init_leg_servo_angle - 25;      // front right lower leg
-//  
-//  updated_servo_angle[2] = init_leg_servo_angle + 30;       // front left upper leg
-//  updated_servo_angle[3] = init_leg_servo_angle + 40;       // front left lower leg
-//  
-//  updated_servo_angle[4] = init_leg_servo_angle - 50;        // back right upper leg
-//  updated_servo_angle[5] = init_leg_servo_angle - 40;       // back right lower leg
-//  
-//  updated_servo_angle[6] = init_leg_servo_angle + 40;      // back left upper leg
-//  updated_servo_angle[7] = init_leg_servo_angle + 30;     // back left lower leg
-//
-//  set_servo_position();
-//
-//  delay(200);
-//  
-//  }
  
-}
 
 
 // ------------------------------------------------------------------------------------------------------------------------------------------------------ 
