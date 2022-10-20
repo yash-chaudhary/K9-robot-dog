@@ -13,6 +13,8 @@
  *  
  *  NOTE that the head will move only for certain commands and operates betweeo 0 and 180 degrees where 90 degrees is its neutral position
  *  
+ *  Using ultrasonic sensor to control motion
+ *  
  */
 
 #include <Wire.h>                       // library for I2C communication
@@ -29,7 +31,16 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x40, Wire);
 #define SERVO_FREQ 50         // analog servo frequency at 50Hz or pulse every 20ms
 #define SERVO_COUNT 8         // number of servo actuators (8 leg servos + 1 head servo)
 
-String command;                 // string type command
+// ultrasonic initialisations
+const int echo_pin = 2;
+const int trigger_pin = 3;
+int distance_cm;
+long duration_us;
+const int LAYDOWN_THRES = 5;
+const int STANDUP_THRES = 10;
+const int SIT_THRES = 15;
+const int SHAKE_THRES = 20;
+const int DANCE_THRES = 25;
 
 /*
  * updated_servo_angle[0] assigned to front right upper leg
@@ -59,66 +70,75 @@ void walk();
 // ------------------------------------------------------------------- SETUP -------------------------------------------------------------------
 
 void setup() {
-  Serial.begin(9600);                               // establishing serial connection at baud rate of 9600 bits/s
-  
-  pwm.begin();                                      // being pwm object
-  pwm.setOscillatorFrequency(27000000);             // set IC oscillator frequency to get expected pmw update frequency 
-  pwm.setPWMFreq(SERVO_FREQ);                       // set pwm frequency based on servo operating frequency
 
-  // ensure serial connection established before proceeding
-  while(!Serial) {
-    ;
-  }
+  // pins for ultrasonic sensor
+  pinMode(trigger_pin, OUTPUT);             // Sets the trig_pin as an OUTPUT
+  pinMode(echo_pin, INPUT);                 // Sets the echo_pin as an INPUT
+  
+  Serial.begin(9600);                       // establishing serial connection at baud rate of 9600 bits/s
+  
+  pwm.begin();                              // being pwm object
+  pwm.setOscillatorFrequency(27000000);     // set IC oscillator frequency to get expected pmw update frequency 
+  pwm.setPWMFreq(SERVO_FREQ);               // set pwm frequency based on servo operating frequency
+
 }
 
 // ------------------------------------------------------------------- LOOP -------------------------------------------------------------------
 
 void loop() {
 
-  // serial connection established between RPI and Arduino
-  if(Serial.available()) {
+  // get distance from ultrasonic sensor
+  digitalWrite(trig_pin, LOW);                  // initially setting trig_pin LOW to get a clean HIGH pulse
+  delayMicroseconds(5);
+  digitalWrite(trig_pin, HIGH);
+  delayMicroseconds(10);                        // use trigger pin to generate pulse 
+  digitalWrite(trig_pin, LOW);
 
-    command = Serial.readStringUntil('\n');       // read string from RPI
-    command.trim();                               // remove any whitespace
+ 
+  duration_us = pulseIn(echo_pin, HIGH);        // measure duration of pulse from echo pin
 
-    if (command.equals("laydown")) {
-      laydown();                              // execute laydown routine
-      Serial.println(1);                      // send execution success integer 
-    }
+  distance_cm = 0.017 * duration_us;            // calculate distance to bounding object
 
-    else if (command.equals("standup")) {
-      standup();                              // execute standup routine
-      Serial.println(1);                      
-    }
+  Serial.print("Distance: ");
+  Serial.print(distance_cm);
+  Serial.println(" cm\n");
 
-    else if (command.equals("sit")) {
-        sit();                                // execute sit routine
-        Serial.println(1);                    
-    }
-
-    else if (command.equals("shake")) {
-        shake();                              // execute sit routine
-        Serial.println(1);                    
-    }
-
-    else if (command.equals("dance")) {
-        dance();                              // execute dance routine
-        Serial.println(1);                     
-    } 
-
-    // runtime protection just in case some bad data is transferred
-    else {
-        standup();                              // execute standup routine
-        Serial.println(1);                     
-    }
-
-    delay(1000);  
+  // command K9 based on distance to bounding object (hand)
+  if(distance_cm <= LAYDOWN_THRES) {
+    laydown();
+    Serial.println("Laydown command EXECUTED");
+    delay(1000);
   }
+
+  else if((distance_cm > LAYDOWN_THRES) && (distance_cm <= STANDUP_THRES)) {
+    standup();
+    Serial.println("Standup command EXECUTED");
+    delay(1000);
+  }
+
+  else if((distance_cm > STANDUP_THRES) && (distance_cm <= SIT_THRES)) {
+    sit();
+    Serial.println("Sit command EXECUTED");
+    delay(1000);
+  }
+
+  else if((distance_cm > SIT_THRES) && (distance_cm <= SHAKE_THRES)) {
+    shake();
+    Serial.println("Shake command EXECUTED");
+    delay(1000);
+  }
+
+  else if(distance_cm > SHAKE_THRES && (distance_cm <= DANCE_THRES)) {
+    dance();
+    Serial.println("Dance command EXECUTED");
+    delay(1000);
+  }
+
+  delay(1000);
+  
 }
 
 // ------------------------------------------------------------------- MOTOR CONTROL -------------------------------------------------------------------
-
-// NEED to setup up a way to revert back to standup movement after a delay for each movement !!!!!!!!!!!!!! - just use a delay and then standup() command for non-standups commands
 
 // function that moves servos to correct positions 
 void set_servo_position() {
@@ -136,18 +156,9 @@ void set_servo_position() {
 
 // function to map angle to pulse length 
 int map_angle(int angle, int max_deg) {
-
-  // maps pulse length between 0 and 180
-  if (max_deg == 180) {
-    int pulse_length_angle = map(angle, 0, 180, SG90_SERVOMIN, SG90_SERVOMAX);     // mapping with min, max servo pulse length
-    return pulse_length_angle; 
-  }
-
-  // maps pulse length between 0 and 270
-  else if (max_deg == 270) {
-    int pulse_length_angle = map(angle, 0, 270, SERVOMIN, SERVOMAX);               // mapping with min, max servo pulse length
-    return pulse_length_angle; 
-  }
+  int pulse_length_angle = map(angle, 0, 270, SERVOMIN, SERVOMAX);        // mapping with min, max servo pulse length
+  return pulse_length_angle; 
+ 
 }
 
 
@@ -261,9 +272,6 @@ void dance() {
 
   // go back down to standing stance
   standup();
-
-  delay(1000);
-    
   }
 }
 

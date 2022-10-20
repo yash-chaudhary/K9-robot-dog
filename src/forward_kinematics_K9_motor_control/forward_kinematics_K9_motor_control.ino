@@ -24,12 +24,10 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x40, Wire);
 // servo constants
 #define SERVOMIN  85          // minimum servo pulse length count (out of 4096)
 #define SERVOMAX  460         // maximum servo pulse length count (out of 4096)
-#define SG90_SERVOMIN 70      // minimum servo pulse length count for SG-90 head motor
-#define SG90_SERVOMAX 490     // maximum servo pulse length count for SG-90 head motor
 #define USMIN  500            // rounded minimum microsecond length based on the minimum pulse of 80
 #define USMAX  2500           // rounded maximum microsecond length based on the maximum pulse of 470
 #define SERVO_FREQ 50         // analog servo frequency at 50Hz or pulse every 20ms
-#define SERVO_COUNT 9         // number of servo actuators (8 leg servos + 1 head servo)
+#define SERVO_COUNT 8         // number of servo actuators (8 leg servos + 1 head servo)
 
 char command;                 // char type command
 
@@ -45,8 +43,7 @@ char command;                 // char type command
  * updated_servo_angle[8] assigned to head 
  */
 const int init_leg_servo_angle = 135;    // initial leg servo positions
-const int init_head_servo_angle = 90;    // intial head servo position
-int updated_servo_angle[9];              // array to stored updated servo positions
+int updated_servo_angle[8];              // array to stored updated servo positions
 
 // function prototypes
 void set_servo_position();
@@ -56,8 +53,6 @@ void laydown();
 void sit();
 void shake();
 void dance();
-void walk();
-
 
 // ------------------------------------------------------------------- SETUP -------------------------------------------------------------------
 
@@ -79,7 +74,6 @@ void setup() {
  * 'e' = sit()
  * 'r' = shake()
  * 't' = dance()
- * 'y' = walk()
 */
 
 void loop() {
@@ -111,11 +105,6 @@ void loop() {
         Serial.println("----- Dance command EXECUTED! -----");
         dance();
       break;
-
-      case 'y' :
-        Serial.println("----- Walk command EXECUTED! -----");
-        walk();
-      break;
       }
   }
 }
@@ -131,36 +120,18 @@ void set_servo_position() {
   
   // iterate through updated angle for each servo
   for(int servo_num = 0; servo_num < SERVO_COUNT; servo_num++) {          
-
-    // controls movement of head servo
-    if (servo_num == 8) {
-      pulse_len = map_angle(updated_servo_angle[servo_num], 180);           // map updated servo angle position to assocaited pulse length value
-      pwm.setPWM(servo_num, 0, pulse_len);                                  // move servo to specified position
-    }
-
-    // controls movement of leg servos
-    else {
-      pulse_len = map_angle(updated_servo_angle[servo_num], 270);           // map updated servo angle position to assocaited pulse length value
-      pwm.setPWM(servo_num, 0, pulse_len);                                  // move servo to specified position
-    }
     
+    // controls movement of leg servos
+    pulse_len = map_angle(updated_servo_angle[servo_num], 270);           // map updated servo angle position to assocaited pulse length value
+    pwm.setPWM(servo_num, 0, pulse_len);                                  // move servo to specified position
   }  
 }
 
 // function to map angle to pulse length 
 int map_angle(int angle, int max_deg) {
-
-  // maps pulse length between 0 and 180
-  if (max_deg == 180) {
-    int pulse_length_angle = map(angle, 0, 180, SG90_SERVOMIN, SG90_SERVOMAX);     // mapping with min, max servo pulse length
-    return pulse_length_angle; 
-  }
-
-  // maps pulse length between 0 and 270
-  else if (max_deg == 270) {
+  
     int pulse_length_angle = map(angle, 0, 270, SERVOMIN, SERVOMAX);               // mapping with min, max servo pulse length
     return pulse_length_angle; 
-  }
 }
 
 
@@ -202,33 +173,8 @@ void laydown() {
    updated_servo_angle[6] = init_leg_servo_angle;      // back left upper leg (BLU)
    updated_servo_angle[7] = init_leg_servo_angle;      // back left lower leg (BLL)
 
-   updated_servo_angle[8] = init_head_servo_angle;     // head
-
-  set_servo_position();
-   
-   // rotate head when laying down
-   delay(1000);
-   updated_servo_angle[8] = init_head_servo_angle + 10;      // 50
-   set_servo_position(); 
-   delay(400);
-   updated_servo_angle[8] = init_head_servo_angle + 20;
-   set_servo_position(); 
-    delay(400);
-   updated_servo_angle[8] = init_head_servo_angle + 30;
-   set_servo_position(); 
-   delay(400);
-   updated_servo_angle[8] = init_head_servo_angle + 40;
    set_servo_position();
 
-   
-
-   
-//   delay(1000);
-//   updated_servo_angle[8] = init_head_servo_angle - 35;      // -35
-//   set_servo_position(); 
-//   delay(1000);
-//   updated_servo_angle[8] = init_head_servo_angle;
-//   set_servo_position();
 }
 
 
@@ -305,101 +251,6 @@ void dance() {
   delay(1000);
     
   }
-}
-
-
-// walk routine (press y)
-void walk() {
-
-  // need to move diagonal legs from standup stanne
-  // STEP 1: upper leg move forward
-  // STEP 2: lower leg move down -> while this is happening other diagonal moves.
-
-  // standup 
-  standup();
-
-  delay(1000);
-
-   // move leg ---------------------------------------------------------------------------------------------------------
-
-  int times_move = 4;
-
-//  for(int i=0; i < times_move; i++) {
-
-
-  // FRONT RIGHT and BACK LEFT DIAGONAL
-
-  updated_servo_angle[0] = init_leg_servo_angle;       // front right upper leg 
-  updated_servo_angle[1] = init_leg_servo_angle - 30;      // front right lower leg
-  
-  updated_servo_angle[2] = init_leg_servo_angle + 40;       // front left upper leg
-  updated_servo_angle[3] = init_leg_servo_angle + 30;       // front left lower leg
-  
-  updated_servo_angle[4] = init_leg_servo_angle - 55;      // back right upper leg
-  updated_servo_angle[5] = init_leg_servo_angle - 25;       // back right lower leg
-  
-  updated_servo_angle[6] = init_leg_servo_angle - 10;      // back left upper leg
-  updated_servo_angle[7] = init_leg_servo_angle + 30;     // back left lower leg
-
-  set_servo_position();
-  
-//
-//  delay(200);
-//
-//  updated_servo_angle[0] = init_leg_servo_angle - 50;       // front right upper leg 
-//  updated_servo_angle[1] = init_leg_servo_angle - 30;      // front right lower leg
-//  
-//  updated_servo_angle[2] = init_leg_servo_angle + 40;       // front left upper leg
-//  updated_servo_angle[3] = init_leg_servo_angle + 30;       // front left lower leg
-//  
-//  updated_servo_angle[4] = init_leg_servo_angle - 55;        // back right upper leg
-//  updated_servo_angle[5] = init_leg_servo_angle - 25;       // back right lower leg
-//  
-//  updated_servo_angle[6] = init_leg_servo_angle + 30;      // back left upper leg
-//  updated_servo_angle[7] = init_leg_servo_angle + 40;     // back left lower leg
-//
-//  set_servo_position();
-//
-//  delay(200);
-
-
-  // BACK RIGHT and FRONT LEFT DIAGONAL
-  
-//  updated_servo_angle[0] = init_leg_servo_angle - 55;       // front right upper leg 
-//  updated_servo_angle[1] = init_leg_servo_angle - 25;      // front right lower leg
-//  
-//  updated_servo_angle[2] = init_leg_servo_angle - 10;       // front left upper leg
-//  updated_servo_angle[3] = init_leg_servo_angle + 30;       // front left lower leg
-//  
-//  updated_servo_angle[4] = init_leg_servo_angle - 10;      // back right upper leg
-//  updated_servo_angle[5] = init_leg_servo_angle - 25;       // back right lower leg
-//  
-//  updated_servo_angle[6] = init_leg_servo_angle + 40;      // back left upper leg
-//  updated_servo_angle[7] = init_leg_servo_angle + 30;     // back left lower leg
-//
-//  set_servo_position();
-//
-//  delay(200);
-//
-//  
-//  updated_servo_angle[0] = init_leg_servo_angle - 55;       // front right upper leg 
-//  updated_servo_angle[1] = init_leg_servo_angle - 25;      // front right lower leg
-//  
-//  updated_servo_angle[2] = init_leg_servo_angle + 30;       // front left upper leg
-//  updated_servo_angle[3] = init_leg_servo_angle + 40;       // front left lower leg
-//  
-//  updated_servo_angle[4] = init_leg_servo_angle - 50;        // back right upper leg
-//  updated_servo_angle[5] = init_leg_servo_angle - 40;       // back right lower leg
-//  
-//  updated_servo_angle[6] = init_leg_servo_angle + 40;      // back left upper leg
-//  updated_servo_angle[7] = init_leg_servo_angle + 30;     // back left lower leg
-//
-//  set_servo_position();
-//
-//  delay(200);
-//  
-//  }
- 
 }
 
 
