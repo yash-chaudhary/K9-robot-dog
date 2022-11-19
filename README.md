@@ -4,7 +4,8 @@ The COVID-19 pandemic gripped the world with its harsh lockdowns, lonely isolati
 human contact. It turned loving families into raging chihuahua’s. But it was our pets that continued to
 love us unconditionally. This report will demonstrate the development of K9 - man’s best robot friend
 
-![Image of Physical Robot](https://github.com/yash-chaudhary/careSpot/blob/main/Assets/Solution_Architecture_Diagram.png)
+![Image of Physical Robot 1](https://github.com/yash-chaudhary/K9-robot-dog/blob/main/Assets/pic_1.jpeg)
+![Image of Physical Robot 2](https://github.com/yash-chaudhary/K9-robot-dog/blob/main/Assets/pic_2.jpeg)
 
 ### Software Design
 
