@@ -1,4 +1,4 @@
-## K9 Robot Dog
+# K9 Robot Dog
 
 The COVID-19 pandemic gripped the world with its harsh lockdowns, lonely isolation, and imaginary
 human contact. It turned loving families into raging chihuahua’s. But it was our pets that continued to
