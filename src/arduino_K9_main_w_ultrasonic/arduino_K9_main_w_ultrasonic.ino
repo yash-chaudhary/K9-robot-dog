@@ -88,11 +88,11 @@ void setup() {
 void loop() {
 
   // get distance from ultrasonic sensor
-  digitalWrite(trig_pin, LOW);                  // initially setting trig_pin LOW to get a clean HIGH pulse
+  digitalWrite(trigger_pin, LOW);                  // initially setting trig_pin LOW to get a clean HIGH pulse
   delayMicroseconds(5);
-  digitalWrite(trig_pin, HIGH);
+  digitalWrite(trigger_pin, HIGH);
   delayMicroseconds(10);                        // use trigger pin to generate pulse 
-  digitalWrite(trig_pin, LOW);
+  digitalWrite(trigger_pin, LOW);
 
  
   duration_us = pulseIn(echo_pin, HIGH);        // measure duration of pulse from echo pin
@@ -246,7 +246,7 @@ void dance() {
 
   standup();          // must start in standup stance
 
-  delay(1250);        // delay to allow servos to move to standup stance
+  delay(1000);        // delay to allow servos to move to standup stance
 
   int moves_to_bust = 4;   // number of moves to be made
 
@@ -270,9 +270,12 @@ void dance() {
 
   delay(1000);  // delay before changing back to standup stance
 
-  // go back down to standing stance
+   // go back down to standing stance
   standup();
+
   }
+   
+  
 }
 
 
