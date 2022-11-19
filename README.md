@@ -8,7 +8,7 @@
 
 ### Software Design
 
-![Image of Software Design](https://github.com/yash-chaudhary/careSpot/blob/main/Assets/Solution_Architecture_Diagram.png)
+![Image of Software Design](https://github.com/yash-chaudhary/K9-robot-dog/blob/main/Assets/software_design.jpeg)
 
 ### Electrical Design
 
